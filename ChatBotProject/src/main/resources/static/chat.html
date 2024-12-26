@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <script>
+        async function sendMessage() {
+        	const userId = sessionStorage.getItem('userId'); 
+            const message = {
+                senderId: userId,
+                receiverId: 'Amar123',
+                message: document.getElementById("message").value
+            };
+
+            const response = await fetch('/api/messages/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(message)
+            });
+
+            document.getElementById("message").value = '';
+            loadMessages();
+        }
+
+        async function loadMessages() {
+            const userId = sessionStorage.getItem('userId');
+
+            if (!userId) {
+                console.error('User ID not found in session storage!');
+                return;
+            }
+
+            try {
+            	console.log(document.getElementById("message"))
+            	
+            	
+            	 document.getElementById('name').innerText = `Logged in as: ${userId}`;
+               
+               
+                const response = await fetch(`/api/messages/chat?userId=${encodeURIComponent(userId)}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch messages!');
+                }
+	
+                const messages = await response.json();
+
+                
+                const chatBox = document.getElementById("chatBox");
+                chatBox.innerHTML = messages.map(msg => `<p>${msg.senderId}: ${msg.message}</p>`).join('');
+                
+               
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+
+        window.onload = loadMessages;
+    </script>
+</head>
+<body>
+    
+    <p id="name"> </p>
+    
+    
+    <div id="chatBox" style="border: 1px solid black; height: 300px; overflow-y: scroll;"></div>
+    <input type="text" id="message">
+    <button onclick="sendMessage()">Send</button>
+</body>
+</html>
